@@ -1,0 +1,56 @@
+drop database if exists prac6;
+create database prac6;
+
+use prac6;
+
+create table marks(rollno int(20), name varchar(20), total int(20));
+insert into marks(rollno,name,total)values(1,'raj',900),(2,'kally',750),(3,'sak',850);
+select *from marks;
+
+create table result(rollno int(20),name varchar(20),class varchar(20));
+
+delimiter //
+create procedure proc_grade()
+BEGIN
+	declare done int(10) default 0;
+    declare proll int;
+    declare pname varchar(30);
+    declare pclass varchar(30);
+    declare ptotal int;
+    
+    declare pcursor CURSOR 
+    FOR SELECT rollno, name , total FROM marks;
+    
+    declare continue handler for not found set done = 1;
+    
+    open pcursor;
+    
+    readloop : loop 
+      fetch pcursor into proll,pname,ptotal;
+      
+      
+	if done = 1 then leave readloop;
+	end if;
+      
+      if(ptotal between 990 and 1500) then 
+       set pclass = 'distinction';
+      elseif (ptotal between 900 and 989) then 
+       set pclass = 'first class';
+      elseif (ptotal between 825 and 899) then 
+       set pclass = 'second class';
+      else 
+        set pclass = 'pass';
+	end if;
+      
+      insert into result(rollno,name,class)values(proll,pname,pclass);
+ end loop readloop;
+      
+close pcursor;
+end;
+//
+
+delimiter ;
+
+call proc_grade();
+
+select *from result;
