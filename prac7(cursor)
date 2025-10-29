@@ -1,0 +1,48 @@
+DROP database if exists prac7;
+create database prac7;
+use prac7;
+
+create table Oroll(rollno int(20), name varchar(20));
+insert into Oroll(rollno,name)values(1,'raj'),(2,'k'),(3,'s');
+
+select *from Oroll;
+
+create table Nroll(rollno int(20), name varchar(20));
+insert into Nroll(rollno,name)values(1,'raj'),(2,'k'),(5,'m');
+
+select *from Nroll;
+
+delimiter //
+
+create procedure mycursor()
+BEGIN
+declare done int(10) default 0;
+declare croll int(20);
+declare cname varchar(20);
+
+declare cstudent CURSOR for 
+select rollno, name from Oroll
+where rollno NOT IN(select rollno FROM Nroll);
+ 
+ declare continue handler for NOT FOUND SET done = 1;
+ 
+ OPEN cstudent;
+ rloop : loop
+ fetch cstudent into croll,cname;
+ 
+ if done = 1 then leave readloop;
+ end if;
+ 
+ insert into Nroll(rollno,name)values(croll,cname);
+ end loop;
+ 
+ close cstudent;
+ 
+ end;
+ //
+ 
+ delimiter ;
+ 
+ call mycursor();
+ 
+ select *from Nroll;
