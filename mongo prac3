@@ -19,16 +19,21 @@ db.TE.insertMany([
 // Display inserted records
 db.TE.find().pretty()
 
-// MapReduce operation
-db.TE.mapReduce(
-  function() { emit(this.Rollno, this.Marks); },
-  function(key, values) { return Array.sum(values); },
-  {
-    query: { Div: "A" },
-    out: "Total_Marks"
-  }
-)
 
-// Check result
-show collections
-db.Total_Marks.find().pretty()
+
+var deepak = function() {
+  emit(this.Div, this.Marks);
+};
+
+var Red = function(key, values) {
+  return Array.sum(values);
+};
+
+db.TE.mapReduce(
+  deepak,
+  Red,
+  { out: "total1" }
+);
+
+db.total1.find().pretty();
+
