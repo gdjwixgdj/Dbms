@@ -1,0 +1,34 @@
+// --------------------
+// Assignment 3(B)
+// MongoDB MapReduce
+// --------------------
+
+use TEA25
+
+// Create collection
+db.createCollection("TE")
+
+// Insert documents
+db.TE.insertMany([
+  { Rollno: 1, Marks: 98, Div: 'B' },
+  { Rollno: 2, Marks: 90, Div: 'A' },
+  { Rollno: 3, Marks: 84, Div: 'A' },
+  { Rollno: 4, Marks: 70, Div: 'A' }
+])
+
+// Display inserted records
+db.TE.find().pretty()
+
+// MapReduce operation
+db.TE.mapReduce(
+  function() { emit(this.Rollno, this.Marks); },
+  function(key, values) { return Array.sum(values); },
+  {
+    query: { Div: "A" },
+    out: "Total_Marks"
+  }
+)
+
+// Check result
+show collections
+db.Total_Marks.find().pretty()
