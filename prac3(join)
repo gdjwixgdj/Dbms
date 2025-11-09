@@ -1,0 +1,142 @@
+-- ---------------------------------------
+-- Assignment No. 03
+-- SQL Queries – Joins, Subquery, and View
+-- ---------------------------------------
+
+-- Step 1: Create the database
+CREATE DATABASE CollegeDB;
+USE CollegeDB;
+
+-- Step 2: Create main table: Student_Mark
+CREATE TABLE Student_Mark (
+    Rollno INT PRIMARY KEY,
+    Name VARCHAR(30),
+    Marks INT,
+    Branch VARCHAR(30)
+);
+
+-- Step 3: Insert sample data
+INSERT INTO Student_Mark VALUES
+(1, 'Ravi', 90, 'Computer'),
+(2, 'Vedika', 70, 'Computer'),
+(3, 'Aarush', 95, 'IT'),
+(4, 'Jyoti', 60, 'IT');
+
+-- Step 4: Create Branch_Details table
+CREATE TABLE Branch_Details (
+    Branch VARCHAR(30) PRIMARY KEY,
+    Branch_Head VARCHAR(50)
+);
+
+-- Step 5: Insert data into Branch_Details
+INSERT INTO Branch_Details VALUES
+('Computer', 'Dr. Sharma'),
+('IT', 'Dr. Verma'),
+('Mechanical', 'Dr. Singh');
+
+-- Step 6: Create Branch_Avg_Marks (to use in joins)
+CREATE TABLE Branch_Avg_Marks (
+    Branch VARCHAR(30) PRIMARY KEY,
+    Avg_Marks FLOAT
+);
+
+-- Step 7: Insert average marks for each branch
+INSERT INTO Branch_Avg_Marks VALUES
+('Computer', 80.00),
+('IT', 60.00),
+('Mechanical', 0.00);
+
+-- ---------------------------------------
+-- ✅ DML QUERIES
+-- ---------------------------------------
+
+-- 1. Display students with marks > 70
+SELECT * FROM Student_Mark WHERE Marks > 70;
+
+-- 2. Display students with marks < 70
+SELECT * FROM Student_Mark WHERE Marks < 70;
+
+-- 3. Display students who have marks = 70 and name = 'Vedika'
+SELECT * FROM Student_Mark WHERE Marks = 70 AND Name = 'Vedika';
+
+-- 4. Update student name 'Ravi' to 'Sachin'
+UPDATE Student_Mark SET Name = 'Sachin' WHERE Name = 'Ravi';
+
+-- 5. Delete record of student named 'Aarush'
+DELETE FROM Student_Mark WHERE Name = 'Aarush';
+
+-- Check final table
+SELECT * FROM Student_Mark;
+
+-- ---------------------------------------
+-- ✅ AGGREGATE FUNCTIONS & GROUP BY
+-- ---------------------------------------
+
+-- 6. Display branch-wise statistics (min, max, avg, total marks, count)
+SELECT 
+    Branch,
+    MIN(Marks) AS Minimum_Marks,
+    MAX(Marks) AS Maximum_Marks,
+    AVG(Marks) AS Average_Marks,
+    SUM(Marks) AS Total_Marks,
+    COUNT(*) AS Total_Students
+FROM Student_Mark
+GROUP BY Branch;
+
+-- ---------------------------------------
+-- ✅ JOIN OPERATIONS
+-- ---------------------------------------
+
+-- 7. INNER JOIN between Student_Mark and Branch_Avg_Marks
+SELECT sm.Rollno, sm.Name, sm.Marks, sm.Branch, bam.Avg_Marks
+FROM Student_Mark sm
+INNER JOIN Branch_Avg_Marks bam
+ON sm.Branch = bam.Branch;
+
+-- 8. INNER JOIN between Student_Mark and Branch_Details
+SELECT sm.Rollno, sm.Name, sm.Branch, bd.Branch_Head
+FROM Student_Mark sm
+INNER JOIN Branch_Details bd
+ON sm.Branch = bd.Branch;
+
+-- 9. LEFT JOIN (show all students even if branch doesn’t exist)
+SELECT sm.Rollno, sm.Name, sm.Branch, bd.Branch_Head
+FROM Student_Mark sm
+LEFT JOIN Branch_Details bd
+ON sm.Branch = bd.Branch;
+
+-- 10. RIGHT JOIN (show all branches even if no students are there)
+SELECT sm.Rollno, sm.Name, sm.Branch, bd.Branch_Head
+FROM Student_Mark sm
+RIGHT JOIN Branch_Details bd
+ON sm.Branch = bd.Branch;
+
+-- ---------------------------------------
+-- ✅ SUBQUERY
+-- ---------------------------------------
+
+-- 11. Show students who scored above average marks in their branch
+SELECT Rollno, Name, Marks, Branch
+FROM Student_Mark
+WHERE Marks > (
+    SELECT AVG(Marks)
+    FROM Student_Mark AS s2
+    WHERE s2.Branch = Student_Mark.Branch
+);
+
+-- ---------------------------------------
+-- ✅ VIEW CREATION
+-- ---------------------------------------
+
+-- 12. Create a View to show high scorers
+CREATE VIEW v_high_scorer AS
+SELECT Name, Marks, Branch
+FROM Student_Mark
+WHERE Marks > 80;
+
+-- Check the view
+SELECT * FROM v_high_scorer;
+
+-- ---------------------------------------
+-- ✅ END OF ASSIGNMENT
+-- ---------------------------------------
