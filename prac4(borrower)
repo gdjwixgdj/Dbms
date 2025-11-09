@@ -1,0 +1,78 @@
+USE student;
+
+-- Drop old tables if they exist
+DROP TABLE IF EXISTS borrower;
+DROP TABLE IF EXISTS fine;
+
+-- Create tables
+CREATE TABLE borrower(
+  rollno INT PRIMARY KEY,
+  name VARCHAR(20),
+  dateofissue DATE,
+  status VARCHAR(20)
+);
+
+CREATE TABLE fine(
+  rollno INT,
+  date DATE,
+  amount INT
+);
+
+-- Insert sample data
+INSERT INTO borrower VALUES
+(1,'Prathamesh','2023-08-05','issued'),
+(2,'Arjun','2024-07-03','issued'),
+(3,'Mohit','2024-04-07','issued'),
+(4,'Kshitij','2024-05-06','issued');
+
+-- Create procedure
+DELIMITER //
+
+CREATE PROCEDURE p_fine(IN rno INT)
+BEGIN
+  DECLARE d1 DATE;
+  DECLARE daycnt INT;
+  DECLARE fine_amt INT DEFAULT 0;
+
+  -- Exception handler
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+  BEGIN
+    SELECT 'Error: Something went wrong!' AS message;
+  END;
+
+  -- Get date of issue
+  SELECT dateofissue INTO d1 FROM borrower WHERE rollno = rno;
+
+  -- Calculate number of days between issue date and today
+  SET daycnt = DATEDIFF(CURDATE(), d1);
+
+  -- Fine calculation logic
+  IF daycnt BETWEEN 15 AND 30 THEN
+    SET fine_amt = daycnt * 5;
+  ELSEIF daycnt > 30 THEN
+    SET fine_amt = daycnt * 50;
+  ELSE
+    SET fine_amt = 0;
+  END IF;
+
+  -- Insert fine if applicable
+  IF fine_amt > 0 THEN
+    INSERT INTO fine VALUES(rno, CURDATE(), fine_amt);
+  END IF;
+
+  -- Update book status
+  UPDATE borrower SET status = 'Returned' WHERE rollno = rno;
+
+END;
+//
+DELIMITER ;
+
+-- Test the procedure
+CALL p_fine(1);
+CALL p_fine(2);
+CALL p_fine(3);
+CALL p_fine(4);
+
+-- View results
+SELECT * FROM fine;
+SELECT * FROM borrower;
