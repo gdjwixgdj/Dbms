@@ -1,0 +1,69 @@
+-- Create a new database
+CREATE DATABASE assign8;
+USE assign8;
+
+-- Step 1: Create main table
+CREATE TABLE lib_book (
+    bid INT,
+    bname VARCHAR(50),
+    qty INT
+);
+
+-- Step 2: Insert sample records
+INSERT INTO lib_book (bid, bname, qty)
+VALUES
+(101, 'DBMS', 13),
+(102, 'TOC', 17),
+(103, 'SPOS', 22),
+(104, 'CNS', 31),
+(105, 'SPM', 2);
+
+-- Check inserted records
+SELECT * FROM lib_book;
+
+-- Step 3: Create audit table
+CREATE TABLE lib_Audit (
+    bid INT,
+    bname VARCHAR(50),
+    qty INT
+);
+
+-- Step 4: Delete Trigger (AFTER DELETE)
+DROP TRIGGER IF EXISTS Make_audit1;
+DELIMITER //
+CREATE TRIGGER Make_audit1
+AFTER DELETE ON lib_book
+FOR EACH ROW
+BEGIN
+    INSERT INTO lib_Audit (bid, bname, qty)
+    VALUES (OLD.bid, OLD.bname, OLD.qty);
+END;
+//
+DELIMITER ;
+
+-- Step 5: Test DELETE trigger
+DELETE FROM lib_book WHERE bid = 105;
+
+-- Check the tables
+SELECT * FROM lib_book;
+SELECT * FROM lib_Audit;
+
+-- Step 6: Update Trigger (AFTER UPDATE)
+DROP TRIGGER IF EXISTS Make_audit2;
+DELIMITER //
+CREATE TRIGGER Make_audit2
+AFTER UPDATE ON lib_book
+FOR EACH ROW
+BEGIN
+    INSERT INTO lib_Audit (bid, bname, qty)
+    VALUES (OLD.bid, OLD.bname, OLD.qty);
+END;
+//
+DELIMITER ;
+
+-- Step 7: Test UPDATE trigger
+UPDATE lib_book SET bid = 105 WHERE bid = 104;
+
+-- Step 8: View final results
+SELECT * FROM lib_book;
+SELECT * FROM lib_Audit;
