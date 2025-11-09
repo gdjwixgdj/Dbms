@@ -1,64 +1,137 @@
--- Step 1: Create Database
-CREATE DATABASE College;
-USE College;
+-- ============================================
+-- 💾 PRACTICAL – SQL DDL, DML, VIEW, INDEX, SEQUENCE, SYNONYM
+-- ============================================
 
--- Step 2: Create Table with constraints
-CREATE TABLE stu_mark (
-    RollNo INT PRIMARY KEY,              -- Primary Key constraint
-    Name VARCHAR(30) NOT NULL,           -- Not Null constraint
-    Marks INT CHECK (Marks >= 0 AND Marks <= 100),  -- Check constraint
-    Branch VARCHAR(30) DEFAULT 'Computer'            -- Default value
+-- Step 1️⃣: Create new database
+DROP DATABASE IF EXISTS bankdb;
+CREATE DATABASE bankdb;
+USE bankdb;
+
+-- Step 2️⃣: Create Customer table
+CREATE TABLE Customer(
+  Account_no INT PRIMARY KEY,
+  Name VARCHAR(30),
+  Balance INT,
+  City VARCHAR(30)
 );
 
--- Step 3: Insert sample data
-INSERT INTO stu_mark (RollNo, Name, Marks, Branch)
-VALUES 
-(1, 'Ravi', 90, 'Computer'),
-(2, 'Vedika', 70, 'Computer'),
-(3, 'Aarush', 95, 'IT'),
-(4, 'Jyoti', 60, 'IT');
+-- Step 3️⃣: Insert data
+INSERT INTO Customer VALUES
+(1, 'Ram', 10000, 'Pune'),
+(2, 'Ravi', 25000, 'Nasik'),
+(3, 'Sachin', 30000, 'Mumbai');
 
--- Step 4: Display all data
-SELECT * FROM stu_mark;
+-- Step 4️⃣: Create Loan table
+CREATE TABLE Loan(
+  Loan_no INT PRIMARY KEY,
+  Name VARCHAR(30),
+  Loan_Amount INT
+);
 
--- Step 5: Use WHERE condition
-SELECT * FROM stu_mark WHERE Marks > 70;
+-- Step 5️⃣: Insert data
+INSERT INTO Loan VALUES
+(1, 'Ram', 10000),
+(2, 'Ravi', 50000),
+(4, 'Dipak', 40000);
 
--- Step 6: Update a record
-UPDATE stu_mark SET Name = 'Sachin' WHERE Name = 'Ravi';
+-- Step 6️⃣: Display both tables
+SELECT * FROM Customer;
+SELECT * FROM Loan;
 
--- Step 7: Delete a record
-DELETE FROM stu_mark WHERE Name = 'Aarush';
+-- ============================================
+-- 🧩 SET OPERATIONS (UNION / INTERSECT / MINUS)
+-- ============================================
 
--- Step 8: Create a VIEW (virtual table)
-CREATE VIEW v_high_scorer AS
-SELECT Name, Marks, Branch FROM stu_mark WHERE Marks > 80;
+-- 1) Customer having account OR loan (UNION)
+SELECT Name FROM Customer
+UNION
+SELECT Name FROM Loan;
 
--- Step 9: Create an INDEX (for faster searching)
-CREATE INDEX idx_name ON stu_mark(Name);
+-- 2) Customer having account AND loan (INTERSECT)
+SELECT Name FROM Customer
+WHERE Name IN (SELECT Name FROM Loan);
 
--- Step 10: Create a SYNONYM-like VIEW (alias table)
-CREATE VIEW stu_alias AS 
-SELECT * FROM stu_mark;
+-- 3) Customer having account but no loan (MINUS)
+SELECT Name FROM Customer
+WHERE Name NOT IN (SELECT Name FROM Loan);
 
--- Step 11: Use aggregate functions
+-- ============================================
+-- 👁️ CREATE VIEWS
+-- ============================================
+
+-- a) Customers with balance > 20000
+CREATE VIEW v_high_balance AS
+SELECT * FROM Customer WHERE Balance > 20000;
+
+SELECT * FROM v_high_balance;
+
+-- b) Customers from Nasik with balance > 20000
+CREATE VIEW v_nasik_high_balance AS
+SELECT * FROM Customer
+WHERE City = 'Nasik' AND Balance > 20000;
+
+SELECT * FROM v_nasik_high_balance;
+
+-- ============================================
+-- ⚡ CREATE INDEXES
+-- ============================================
+
+-- Single column index
+CREATE INDEX idx_name ON Customer(Name);
+
+-- Composite index on Account_no and Name
+CREATE INDEX idx_acc_name ON Customer(Account_no, Name);
+
+-- ============================================
+-- 🔢 SEQUENCE (MySQL 8+ AUTO_INCREMENT method)
+-- ============================================
+
+-- MySQL doesn't have direct CREATE SEQUENCE like Oracle,
+-- so we simulate using AUTO_INCREMENT.
+
+CREATE TABLE SeqExample(
+  Seq_ID INT AUTO_INCREMENT PRIMARY KEY,
+  Info VARCHAR(30)
+);
+
+INSERT INTO SeqExample(Info) VALUES ('First Record');
+INSERT INTO SeqExample(Info) VALUES ('Second Record');
+INSERT INTO SeqExample(Info) VALUES ('Third Record');
+
+SELECT * FROM SeqExample;
+
+-- ============================================
+-- 🏷️ SYNONYM (MySQL doesn’t support true synonyms, so use alias)
+-- ============================================
+
+-- Using ALIAS as a synonym for table or column
+SELECT Name AS Borrower_Name, Loan_Amount AS Principal
+FROM Loan;
+
+-- You can also make a VIEW as a synonym
+CREATE VIEW loan_synonym AS SELECT * FROM Loan;
+
+SELECT * FROM loan_synonym;
+
+-- ============================================
+-- 📈 ORDER BY QUERIES
+-- ============================================
+
+-- a) Customers in ascending order of Balance
+SELECT * FROM Customer ORDER BY Balance ASC;
+
+-- b) Borrowers in descending order of Loan_Amount
+SELECT * FROM Loan ORDER BY Loan_Amount DESC;
+
+-- ============================================
+-- 💰 INTEREST CALCULATION for 20 years (5% rate)
+-- ============================================
 SELECT 
-    MAX(Marks) AS Highest_Marks,
-    MIN(Marks) AS Lowest_Marks,
-    AVG(Marks) AS Average_Marks
-FROM stu_mark;
+  Name,
+  Loan_Amount,
+  (Loan_Amount * 5 * 20)/100 AS Interest
+FROM Loan;
 
--- Step 12: Create a SEQUENCE (MySQL doesn’t have true sequences, but we can simulate)
--- Using AUTO_INCREMENT for RollNo is equivalent to a sequence
-CREATE TABLE student_seq (
-    RollNo INT AUTO_INCREMENT PRIMARY KEY,
-    Name VARCHAR(30),
-    Marks INT
-);
-
-INSERT INTO student_seq (Name, Marks) VALUES
-('Pooja', 85),
-('Rahul', 77),
-('Nisha', 92);
-
-SELECT * FROM student_seq;
+-- ============================================
+-- ✅ END OF PRACTICAL
+-- ============================================
