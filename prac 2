@@ -1,0 +1,64 @@
+-- Step 1: Create Database
+CREATE DATABASE College;
+USE College;
+
+-- Step 2: Create Table with constraints
+CREATE TABLE stu_mark (
+    RollNo INT PRIMARY KEY,              -- Primary Key constraint
+    Name VARCHAR(30) NOT NULL,           -- Not Null constraint
+    Marks INT CHECK (Marks >= 0 AND Marks <= 100),  -- Check constraint
+    Branch VARCHAR(30) DEFAULT 'Computer'            -- Default value
+);
+
+-- Step 3: Insert sample data
+INSERT INTO stu_mark (RollNo, Name, Marks, Branch)
+VALUES 
+(1, 'Ravi', 90, 'Computer'),
+(2, 'Vedika', 70, 'Computer'),
+(3, 'Aarush', 95, 'IT'),
+(4, 'Jyoti', 60, 'IT');
+
+-- Step 4: Display all data
+SELECT * FROM stu_mark;
+
+-- Step 5: Use WHERE condition
+SELECT * FROM stu_mark WHERE Marks > 70;
+
+-- Step 6: Update a record
+UPDATE stu_mark SET Name = 'Sachin' WHERE Name = 'Ravi';
+
+-- Step 7: Delete a record
+DELETE FROM stu_mark WHERE Name = 'Aarush';
+
+-- Step 8: Create a VIEW (virtual table)
+CREATE VIEW v_high_scorer AS
+SELECT Name, Marks, Branch FROM stu_mark WHERE Marks > 80;
+
+-- Step 9: Create an INDEX (for faster searching)
+CREATE INDEX idx_name ON stu_mark(Name);
+
+-- Step 10: Create a SYNONYM-like VIEW (alias table)
+CREATE VIEW stu_alias AS 
+SELECT * FROM stu_mark;
+
+-- Step 11: Use aggregate functions
+SELECT 
+    MAX(Marks) AS Highest_Marks,
+    MIN(Marks) AS Lowest_Marks,
+    AVG(Marks) AS Average_Marks
+FROM stu_mark;
+
+-- Step 12: Create a SEQUENCE (MySQL doesn’t have true sequences, but we can simulate)
+-- Using AUTO_INCREMENT for RollNo is equivalent to a sequence
+CREATE TABLE student_seq (
+    RollNo INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(30),
+    Marks INT
+);
+
+INSERT INTO student_seq (Name, Marks) VALUES
+('Pooja', 85),
+('Rahul', 77),
+('Nisha', 92);
+
+SELECT * FROM student_seq;
