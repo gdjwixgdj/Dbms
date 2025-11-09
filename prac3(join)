@@ -1,142 +1,304 @@
--- ---------------------------------------
--- Assignment No. 03
--- SQL Queries – Joins, Subquery, and View
--- ---------------------------------------
+-- =====================================================
+-- 💾 Assignment: Joins, Subqueries & Views (Full Solution)
+-- =====================================================
 
--- Step 1: Create the database
-CREATE DATABASE CollegeDB;
-USE CollegeDB;
+-- 1️⃣ Create new database
+DROP DATABASE IF EXISTS prac3;
+CREATE DATABASE prac3;
+USE prac3;
 
--- Step 2: Create main table: Student_Mark
-CREATE TABLE Student_Mark (
-    Rollno INT PRIMARY KEY,
-    Name VARCHAR(30),
-    Marks INT,
-    Branch VARCHAR(30)
+-- 2️⃣ Create Table: Student_Mark
+CREATE TABLE Student_Mark(
+  Rollno INT PRIMARY KEY,        -- Primary Key constraint
+  Name VARCHAR(30),
+  Marks INT,
+  Branch VARCHAR(30)
 );
 
--- Step 3: Insert sample data
+-- 3️⃣ Insert four records
 INSERT INTO Student_Mark VALUES
 (1, 'Ravi', 90, 'Computer'),
 (2, 'Vedika', 70, 'Computer'),
 (3, 'Aarush', 95, 'IT'),
 (4, 'Jyoti', 60, 'IT');
 
--- Step 4: Create Branch_Details table
-CREATE TABLE Branch_Details (
-    Branch VARCHAR(30) PRIMARY KEY,
-    Branch_Head VARCHAR(50)
-);
-
--- Step 5: Insert data into Branch_Details
-INSERT INTO Branch_Details VALUES
-('Computer', 'Dr. Sharma'),
-('IT', 'Dr. Verma'),
-('Mechanical', 'Dr. Singh');
-
--- Step 6: Create Branch_Avg_Marks (to use in joins)
-CREATE TABLE Branch_Avg_Marks (
-    Branch VARCHAR(30) PRIMARY KEY,
-    Avg_Marks FLOAT
-);
-
--- Step 7: Insert average marks for each branch
-INSERT INTO Branch_Avg_Marks VALUES
-('Computer', 80.00),
-('IT', 60.00),
-('Mechanical', 0.00);
-
--- ---------------------------------------
--- ✅ DML QUERIES
--- ---------------------------------------
-
--- 1. Display students with marks > 70
-SELECT * FROM Student_Mark WHERE Marks > 70;
-
--- 2. Display students with marks < 70
-SELECT * FROM Student_Mark WHERE Marks < 70;
-
--- 3. Display students who have marks = 70 and name = 'Vedika'
-SELECT * FROM Student_Mark WHERE Marks = 70 AND Name = 'Vedika';
-
--- 4. Update student name 'Ravi' to 'Sachin'
-UPDATE Student_Mark SET Name = 'Sachin' WHERE Name = 'Ravi';
-
--- 5. Delete record of student named 'Aarush'
-DELETE FROM Student_Mark WHERE Name = 'Aarush';
-
--- Check final table
+-- View table data
 SELECT * FROM Student_Mark;
 
--- ---------------------------------------
--- ✅ AGGREGATE FUNCTIONS & GROUP BY
--- ---------------------------------------
+-- 4️⃣ Display student having marks above 70
+SELECT * FROM Student_Mark WHERE Marks > 70;
 
--- 6. Display branch-wise statistics (min, max, avg, total marks, count)
+-- 5️⃣ Display student having marks below 70
+SELECT * FROM Student_Mark WHERE Marks < 70;
+
+-- 6️⃣ Display student having marks equal to 70 and name is Vedika
+SELECT * FROM Student_Mark WHERE Marks = 70 AND Name = 'Vedika';
+
+-- 7️⃣ Change student name Ravi to Sachin
+UPDATE Student_Mark SET Name = 'Sachin' WHERE Name = 'Ravi';
+
+-- Check update
+SELECT * FROM Student_Mark;
+
+-- 8️⃣ Delete student whose name is Aarush
+DELETE FROM Student_Mark WHERE Name = 'Aarush';
+
+-- Check delete
+SELECT * FROM Student_Mark;
+
+-- 9️⃣ Function to display student having max marks
+-- (Note: MySQL doesn’t allow stored functions easily without delimiter,
+-- so we simulate it with a simple query)
+
+SELECT * FROM Student_Mark
+WHERE Marks = (SELECT MAX(Marks) FROM Student_Mark);
+
+-- 🔟 Display Minimum, Maximum, Average, Sum, and Total Count of each branch
 SELECT 
-    Branch,
-    MIN(Marks) AS Minimum_Marks,
-    MAX(Marks) AS Maximum_Marks,
-    AVG(Marks) AS Average_Marks,
-    SUM(Marks) AS Total_Marks,
-    COUNT(*) AS Total_Students
+  Branch,
+  MIN(Marks) AS MinMarks,
+  MAX(Marks) AS MaxMarks,
+  AVG(Marks) AS AvgMarks,
+  SUM(Marks) AS SumMarks,
+  COUNT(*) AS TotalStudents
 FROM Student_Mark
 GROUP BY Branch;
 
--- ---------------------------------------
--- ✅ JOIN OPERATIONS
--- ---------------------------------------
-
--- 7. INNER JOIN between Student_Mark and Branch_Avg_Marks
-SELECT sm.Rollno, sm.Name, sm.Marks, sm.Branch, bam.Avg_Marks
-FROM Student_Mark sm
-INNER JOIN Branch_Avg_Marks bam
-ON sm.Branch = bam.Branch;
-
--- 8. INNER JOIN between Student_Mark and Branch_Details
-SELECT sm.Rollno, sm.Name, sm.Branch, bd.Branch_Head
-FROM Student_Mark sm
-INNER JOIN Branch_Details bd
-ON sm.Branch = bd.Branch;
-
--- 9. LEFT JOIN (show all students even if branch doesn’t exist)
-SELECT sm.Rollno, sm.Name, sm.Branch, bd.Branch_Head
-FROM Student_Mark sm
-LEFT JOIN Branch_Details bd
-ON sm.Branch = bd.Branch;
-
--- 10. RIGHT JOIN (show all branches even if no students are there)
-SELECT sm.Rollno, sm.Name, sm.Branch, bd.Branch_Head
-FROM Student_Mark sm
-RIGHT JOIN Branch_Details bd
-ON sm.Branch = bd.Branch;
-
--- ---------------------------------------
--- ✅ SUBQUERY
--- ---------------------------------------
-
--- 11. Show students who scored above average marks in their branch
-SELECT Rollno, Name, Marks, Branch
-FROM Student_Mark
-WHERE Marks > (
-    SELECT AVG(Marks)
-    FROM Student_Mark AS s2
-    WHERE s2.Branch = Student_Mark.Branch
+-- ==========================================
+-- 🧾 Create second table: Student_Info
+-- ==========================================
+CREATE TABLE Student_Info(
+  Rollno INT PRIMARY KEY,
+  Name VARCHAR(30),
+  Address VARCHAR(50)
 );
 
--- ---------------------------------------
--- ✅ VIEW CREATION
--- ---------------------------------------
+-- Insert data into Student_Info
+INSERT INTO Student_Info VALUES
+(1, 'Ravi', 'Nashik'),
+(2, 'Vedika', 'Nashik'),
+(5, 'Tushar', 'Pune'),
+(6, 'Varsha', 'Mumbai');
 
--- 12. Create a View to show high scorers
-CREATE VIEW v_high_scorer AS
-SELECT Name, Marks, Branch
+-- View table
+SELECT * FROM Student_Info;
+
+-- ==========================================
+-- 🧩 INNER JOIN (common Rollnos)
+-- ==========================================
+SELECT 
+  Student_Mark.Rollno, 
+  Student_Mark.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
 FROM Student_Mark
-WHERE Marks > 80;
+INNER JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
 
--- Check the view
+-- ==========================================
+-- 🧩 LEFT OUTER JOIN
+-- ==========================================
+SELECT 
+  Student_Mark.Rollno, 
+  Student_Mark.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+LEFT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
+
+-- ==========================================
+-- 🧩 RIGHT OUTER JOIN
+-- ==========================================
+SELECT 
+  Student_Info.Rollno, 
+  Student_Info.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+RIGHT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
+
+-- ==========================================
+-- 🧩 FULL OUTER JOIN (simulate using UNION)
+-- ==========================================
+SELECT 
+  Student_Mark.Rollno, 
+  Student_Mark.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+LEFT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno
+UNION
+SELECT 
+  Student_Info.Rollno, 
+  Student_Info.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+RIGHT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
+
+-- ==========================================
+-- 👁️ Create a View for students with Marks > 70
+-- ==========================================
+CREATE VIEW v_high_scorer AS
+SELECT Name, Marks, Branch FROM Student_Mark WHERE Marks > 70;
+
 SELECT * FROM v_high_scorer;
 
--- ---------------------------------------
--- ✅ END OF ASSIGNMENT
--- ---------------------------------------
+-- ✅ End of Practical
+-- ==========================================
+-- =====================================================
+-- 💾 Assignment: Joins, Subqueries & Views (Full Solution)
+-- =====================================================
+
+-- 1️⃣ Create new database
+DROP DATABASE IF EXISTS prac3;
+CREATE DATABASE prac3;
+USE prac3;
+
+-- 2️⃣ Create Table: Student_Mark
+CREATE TABLE Student_Mark(
+  Rollno INT PRIMARY KEY,        -- Primary Key constraint
+  Name VARCHAR(30),
+  Marks INT,
+  Branch VARCHAR(30)
+);
+
+-- 3️⃣ Insert four records
+INSERT INTO Student_Mark VALUES
+(1, 'Ravi', 90, 'Computer'),
+(2, 'Vedika', 70, 'Computer'),
+(3, 'Aarush', 95, 'IT'),
+(4, 'Jyoti', 60, 'IT');
+
+-- View table data
+SELECT * FROM Student_Mark;
+
+-- 4️⃣ Display student having marks above 70
+SELECT * FROM Student_Mark WHERE Marks > 70;
+
+-- 5️⃣ Display student having marks below 70
+SELECT * FROM Student_Mark WHERE Marks < 70;
+
+-- 6️⃣ Display student having marks equal to 70 and name is Vedika
+SELECT * FROM Student_Mark WHERE Marks = 70 AND Name = 'Vedika';
+
+-- 7️⃣ Change student name Ravi to Sachin
+UPDATE Student_Mark SET Name = 'Sachin' WHERE Name = 'Ravi';
+
+-- Check update
+SELECT * FROM Student_Mark;
+
+-- 8️⃣ Delete student whose name is Aarush
+DELETE FROM Student_Mark WHERE Name = 'Aarush';
+
+-- Check delete
+SELECT * FROM Student_Mark;
+
+-- 9️⃣ Function to display student having max marks
+-- (Note: MySQL doesn’t allow stored functions easily without delimiter,
+-- so we simulate it with a simple query)
+
+SELECT * FROM Student_Mark
+WHERE Marks = (SELECT MAX(Marks) FROM Student_Mark);
+
+-- 🔟 Display Minimum, Maximum, Average, Sum, and Total Count of each branch
+SELECT 
+  Branch,
+  MIN(Marks) AS MinMarks,
+  MAX(Marks) AS MaxMarks,
+  AVG(Marks) AS AvgMarks,
+  SUM(Marks) AS SumMarks,
+  COUNT(*) AS TotalStudents
+FROM Student_Mark
+GROUP BY Branch;
+
+-- ==========================================
+-- 🧾 Create second table: Student_Info
+-- ==========================================
+CREATE TABLE Student_Info(
+  Rollno INT PRIMARY KEY,
+  Name VARCHAR(30),
+  Address VARCHAR(50)
+);
+
+-- Insert data into Student_Info
+INSERT INTO Student_Info VALUES
+(1, 'Ravi', 'Nashik'),
+(2, 'Vedika', 'Nashik'),
+(5, 'Tushar', 'Pune'),
+(6, 'Varsha', 'Mumbai');
+
+-- View table
+SELECT * FROM Student_Info;
+
+-- ==========================================
+-- 🧩 INNER JOIN (common Rollnos)
+-- ==========================================
+SELECT 
+  Student_Mark.Rollno, 
+  Student_Mark.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+INNER JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
+
+-- ==========================================
+-- 🧩 LEFT OUTER JOIN
+-- ==========================================
+SELECT 
+  Student_Mark.Rollno, 
+  Student_Mark.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+LEFT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
+
+-- ==========================================
+-- 🧩 RIGHT OUTER JOIN
+-- ==========================================
+SELECT 
+  Student_Info.Rollno, 
+  Student_Info.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+RIGHT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
+
+-- ==========================================
+-- 🧩 FULL OUTER JOIN (simulate using UNION)
+-- ==========================================
+SELECT 
+  Student_Mark.Rollno, 
+  Student_Mark.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+LEFT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno
+UNION
+SELECT 
+  Student_Info.Rollno, 
+  Student_Info.Name, 
+  Student_Mark.Marks, 
+  Student_Info.Address
+FROM Student_Mark
+RIGHT JOIN Student_Info
+ON Student_Mark.Rollno = Student_Info.Rollno;
+
+-- ==========================================
+-- 👁️ Create a View for students with Marks > 70
+-- ==========================================
+CREATE VIEW v_high_scorer AS
+SELECT Name, Marks, Branch FROM Student_Mark WHERE Marks > 70;
+
+SELECT * FROM v_high_scorer;
+
+-- ✅ End of Practical
+-- ==========================================
